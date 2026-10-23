@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SISTec Online Examination Portal - MCQ test, handwritten answer photo upload, countdown timer and instant objective result. Runs fully in your browser.">
+  <meta name="theme-color" content="#4f46e5">
+  <title>SISTec Online Examination Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-screen="landing">
+
+  <div class="bg-blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="confetti" aria-hidden="true"></div>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="topbar no-print">
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true">🎓</span>
+      <div class="brand-text"><strong>SISTec</strong><small>Online Examination Portal</small></div>
+    </div>
+    <div class="exam-meta" id="examMeta">
+      <div class="student-chip" id="hdrStudent"></div>
+      <div class="timer" id="timer" role="timer" aria-label="Time remaining">
+        <span class="timer-ico" aria-hidden="true">⏱</span>
+        <span id="timerText">00:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <noscript>
+    <p style="padding:24px;text-align:center;font-family:sans-serif">This examination portal needs JavaScript. Please enable JavaScript in your browser.</p>
+  </noscript>
+
+  <!-- ===================== LANDING ===================== -->
+  <section id="screen-landing" class="screen active">
+    <div class="landing-grid">
+      <div class="hero">
+        <span class="pill">Semester Examination Portal</span>
+        <h1>Online Examination <span class="grad">Portal</span></h1>
+        <p class="lead">Attempt MCQs, upload photos of your handwritten answers, watch the countdown and get your objective score instantly.</p>
+        <ul class="chips" id="heroChips"></ul>
+        <div class="notice">
+          <span class="notice-ico" aria-hidden="true">💾</span>
+          <div>
+            <strong>Everything stays on this device.</strong>
+            Your details, answers and photographs are saved only in this browser (LocalStorage and IndexedDB).
+            They are <b>not uploaded</b> to a teacher or to any server, and they do not move to another device.
+            Please use the same browser and do not clear site data during the exam.
+          </div>
+        </div>
+      </div>
+
+      <form class="card form-card" id="studentForm" novalidate autocomplete="off">
+        <h2>Student Information</h2>
+        <p class="muted">Fill in all fields to begin your test.</p>
+
+        <div class="field" id="fName">
+          <label for="sName">Student Name <b>*</b></label>
+          <input id="sName" type="text" placeholder="e.g. Aarav Sharma" maxlength="60">
+          <small class="err" id="eName"></small>
+        </div>
+
+        <div class="field" id="fRoll">
+          <label for="sRoll">Roll Number <b>*</b></label>
+          <input id="sRoll" type="text" placeholder="e.g. 0151CS231001" maxlength="20">
+          <small class="err" id="eRoll"></small>
+        </div>
+
+        <div class="row2">
+          <div class="field" id="fBranch">
+            <label for="sBranch">Branch <b>*</b></label>
+            <select id="sBranch">
+              <option value="">Select branch</option>
+              <option>Computer Science &amp; Engineering</option>
+              <option>CSE (Artificial Intelligence &amp; Machine Learning)</option>
+              <option>CSE (Data Science)</option>
+              <option>Information Technology</option>
+              <option>Electronics &amp; Communication</option>
+              <option>Electrical &amp; Electronics</option>
+              <option>Mechanical Engineering</option>
+              <option>Civil Engineering</option>
+              <option>Other</option>
+            </select>
+            <small class="err" id="eBranch"></small>
+          </div>
+          <div class="field" id="fSem">
+            <label for="sSem">Semester <b>*</b></label>
+            <select id="sSem">
+              <option value="">Select</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+            <small class="err" id="eSem"></small>
+          </div>
+        </div>
+
+        <div class="field" id="fSubject">
+          <label for="sSubject">Subject Name <b>*</b></label>
+          <input id="sSubject" type="text" maxlength="80">
+          <small class="err" id="eSubject"></small>
+        </div>
+
+        <div class="field" id="fTest">
+          <label for="sTest">Test Name <b>*</b></label>
+          <input id="sTest" type="text" maxlength="80">
+          <small class="err" id="eTest"></small>
+        </div>
+
+        <button type="submit" class="btn btn-start" id="btnStart"><span>Start Test</span><i aria-hidden="true">→</i></button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== EXAM ===================== -->
+  <section id="screen-exam" class="screen">
+    <div class="exam-layout">
+      <div class="exam-main" id="examMain">
+        <div class="progress-card card">
+          <div class="progress-label">
+            <span id="progText">0 of 0 answered</span>
+            <span class="progress-right">
+              <button type="button" class="btn btn-mini only-mobile" id="btnJump">▦ Palette</button>
+              <b id="progPct">0%</b>
+            </span>
+          </div>
+          <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBox"><div id="progBar"></div></div>
+        </div>
+
+        <article class="q-card card" id="qCard"></article>
+
+        <div class="action-bar card">
+          <button type="button" class="btn btn-outline" id="btnPrev">← Previous</button>
+          <button type="button" class="btn btn-danger-o" id="btnClear">✕ Clear Answer</button>
+          <button type="button" class="btn btn-review" id="btnReview">⚑ Mark for Review</button>
+          <button type="button" class="btn btn-primary" id="btnNext">Next →</button>
+        </div>
+      </div>
+
+      <aside class="sidebar card" id="palettePanel">
+        <h3>Question Palette</h3>
+        <div id="palette"></div>
+        <div class="legend" id="legend"></div>
+        <button type="button" class="btn btn-submit btn-block" id="btnSubmit">Submit Test</button>
+        <p class="tiny muted">Your progress is saved automatically on this device.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===================== RESULT ===================== -->
+  <section id="screen-result" class="screen">
+    <div id="resultRoot" class="result-wrap"></div>
+  </section>
+
+  <footer class="footer no-print">SISTec Online Examination Portal · Works offline in your browser · No data leaves your device</footer>
+
+  <!-- ===================== MODAL ===================== -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-icon" id="modalIcon" aria-hidden="true"></div>
+      <h2 id="modalTitle"></h2>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <!-- Hidden file inputs (photo upload) -->
+  <input type="file" id="fileInput" hidden multiple accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+  <input type="file" id="camInput" hidden accept="image/*" capture="environment">
+  <input type="file" id="replaceInput" hidden accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
